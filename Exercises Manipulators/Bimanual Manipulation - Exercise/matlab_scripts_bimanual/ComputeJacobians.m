@@ -24,15 +24,21 @@ pandaArm.ArmL.bJe = geometricJacobian(pandaArm.ArmL.franka, ...
 pandaArm.ArmR.bJe = geometricJacobian(pandaArm.ArmR.franka, ...
     [pandaArm.ArmR.q',0,0],'panda_link7');%DO NOT EDIT
 
-% Top three rows are angular velocities, bottom three linear velocities
-pandaArm.ArmL.wJt  = pandaArm.ArmL.bJe;
-pandaArm.ArmR.wJt  = ...;
+%%%%%%%%%%%%%%AGGIUNTO IO %%%%%%%%%%%%%%%%%%%%%%%%%%
+% Ste is the rigid body transformation from end-effector frame to 
+% tool-frame frame projected on <w>
+pandaArm.ArmL.Ste = [eye(3) zeros(3);  -skew(pandaArm.ArmL.wTe(1:3,1:3)*pandaArm.ArmL.eTt(1:3,4)) eye(3)];
+pandaArm.ArmR.Ste = [eye(3) zeros(3);  -skew(pandaArm.ArmR.wTe(1:3,1:3)*pandaArm.ArmR.eTt(1:3,4)) eye(3)];
 
+% Top three rows are angular velocities, bottom three linear velocities
+pandaArm.ArmL.wJt  = pandaArm.ArmL.Ste*[pandaArm.ArmL.wTb(1:3,1:3) zeros(3,3) ; zeros(3,3) pandaArm.ArmL.wTb(1:3,1:3)]*pandaArm.ArmL.bJe;
+pandaArm.ArmR.wJt  =pandaArm.ArmR.Ste*[pandaArm.ArmR.wTb(1:3,1:3) zeros(3,3) ; zeros(3,3) pandaArm.ArmR.wTb(1:3,1:3)]*pandaArm.ArmR.bJe;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if (mission.phase == 2)
     pandaArm.ArmL.wJo = ...; 
     pandaArm.ArmR.wJo = ...;
 
 % Common Jacobians
-pandaArm.Jjl = ...;
-
+pandaArm.Jjl = eye(14,14);
+pandaArm.Jma = eye(14,14);
 end

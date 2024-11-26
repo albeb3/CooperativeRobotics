@@ -3,14 +3,36 @@ function [pandaArm] = ComputeTaskReferences(pandaArm,mission)
 pandaArm.dist_tools = norm(pandaArm.ArmL.wTt(1:3, 4) - pandaArm.ArmR.wTt(1:3, 4));
 % Compute minimum altitude reference ALWAYS
 
-pandaArm.ArmL.xdot.alt = ...;
-pandaArm.ArmR.xdot.alt = ...;
-
+pandaArm.ArmL.xdot.alt = 0.2 * (0.15-pandaArm.ArmL.wTt(3,4)) ;
+pandaArm.ArmR.xdot.alt = 0.2 * (0.15-pandaArm.ArmR.wTt(3,4)) ;
+pandaArm.xdot.alt =[pandaArm.ArmL.xdot.alt ; pandaArm.ArmR.xdot.alt ];
 % Compute joint limits task reference ALWAYS
 % Create a velocity away from the limits => move to the middle between jlmax and jlmin
-
-pandaArm.ArmL.xdot.jl = ...;
-pandaArm.ArmR.xdot.jl = ...;
+% reference for the joint limits task:
+jlmin = [-2.8973;-1.7628;-2.8973;-3.0718;-2.8973;-0.0175;-2.8973];
+jlmax = [2.8973;1.7628;2.8973;-0.0698;2.8973;3.7525;2.8973];
+pandaArm.ArmL.xdot.jl = zeros(7, 1);
+pandaArm.ArmR.xdot.jl = zeros(7, 1);
+% Computing of velocity joint limit LEFT ARM
+for i = 1:size(jlmin)
+    mean(i) = (jlmin(i) + jlmax(i))/2;
+    if pandaArm.ArmL.q(i) <= mean(i)
+        pandaArm.ArmL.xdot.jl(i) = 0.2 * (jlmin(i) - pandaArm.ArmL.q(i) +0.01);
+    else
+        pandaArm.ArmL.xdot.jl(i) = 0.2 * (jlmax(i) - pandaArm.ArmL.q(i) -0.01);
+    end
+end
+% Computing of velocity joint limit RIGHT ARM
+for i = 1:size(jlmin)
+    mean(i) = (jlmin(i) + jlmax(i))/2;
+    if pandaArm.ArmR.(i) <= mean(i)
+        pandaArm.ArmR.xdot.jl(i) = 0.2 * (jlmin(i) - pandaArm.ArmR.q(i) +0.01);
+    else
+        pandaArm.ArmR.xdot.jl(i) = 0.2 * (jlmax(i) - pandaArm.ArmR.q(i) -0.01);
+    end
+end
+% Assembling of velocities joint limit
+pandaArm.xdot.jl=[pandaArm.ArmL.xdot.jl ; pandaArm.ArmR.xdot.jl];
 
 switch mission.phase
     case 1

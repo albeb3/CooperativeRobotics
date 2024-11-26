@@ -27,29 +27,7 @@ else
     hudps = dsp.UDPSender('RemoteIPPort',1505);
     hudps.RemoteIPAddress = '127.0.0.1';
 end
-%% ... to HERE.
-% Init robot model
 
-wTb_left = eye(4); % fixed transformation word -> base1
-wTb_right = [rotation(0,0,pi),[1.06 -0.01 0]'; 0 0 0 1]; % fixed transformation word -> base2
-
-eRt=rotation(0,0, deg2rad(-44.9949));
-%%% General R-L
-eOt=[0 0 0.2104]';
-
-%%%Left tool
-
-bRe_left=pandaArm.ArmL.bTe[1:3,1:3];
-bRt_left=bRe_left*eRt;
-bOe_left=pandaArm.ArmL.bTe[1:3,4];
-bOt_left=bOe+eOt;
-bTt_left=[bRt_left, bOt_left;zeros(1,3), 1];
-%%%right tool
-bRe_right=pandaArm.ArmR.bTe[1:3,1:3];
-bRt_right=bRe_right*eRt;
-bOe_right=pandaArm.ArmR.bTe[1:3,4];
-bOt_right=bOe+eOt;
-bTt_right=[bRt_right, bOt_right;zeros(1,3), 1];
 
 plt = InitDataPlot(maxloops);
 pandaArms = InitRobot(model,wTb1,wTb2);
@@ -62,20 +40,6 @@ pandaArms.ArmR.wTo = [rotation(0,deg2rad(30),0) [0.5 0 0.59]';zeros(1,3) 1];
 
 theta = -44.9949;% FIXED ANGLE BETWEEN EE AND TOOL 
 tool_length = 0.2124;% FIXED DISTANCE BETWEEN EE AND TOOL
-% Define trasnformation matrix from ee to tool.
-
-pandaArms.ArmL.eTt = [eRt eOt;zeros(1,3) 1];
-pandaArms.ArmR.eTt =[eRt eOt;zeros(1,3) 1];
-
-% Transformation matrix from <t> to <w>
-%%Trasformation left manipulator
-wRt_left=pandaArm.ArmL.wTe[1:3,1:3]*eRt;
-wOt_left=pandaArm.ArmL.wTe[1:3,4]+eOt;
-pandaArms.ArmL.wTt =[wRt_left wOt_left;zeros(1,3) 1];
-%%Trasformation right manipulator
-wRt_right=pandaArm.ArmL.wTe[1:3,1:3]*eRt;
-wOt_right=pandaArm.ArmL.wTe[1:3,4]+eOt;
-pandaArms.ArmR.wTt =[wRt_right wOt_right ;zeros(1,3) 1];
 
 %% Defines the goal position for the end-effector/tool position task
 % First goal reach the grasping points.
@@ -161,10 +125,9 @@ for t = 0:dt:Tf
     % Bimanual system TPIK
     % ...
     % Task: Tool Move-To
-    
-    [Qp, ydotbar] = iCAT_task(eye(14),     eye(14),    ...
-        Qp, ydotbar, zeros(14,1),  ...
-        0.0001,   0.01, 10);    % this task should be the last one
+    [Qp, ydotbar] = iCAT_task(pandaArm.A.jl,  pandaArm.Jjl,  Qp, ydotbar, pandaArm.xdot.jl, 0.0001,   0.01, 10);    % Joint-limit da finire "previous current"
+    [Qp, ydotbar] = iCAT_task(pandaArm.A.ma,  pandaArm.Jma,  Qp, ydotbar, pandaArm.xdot.alt , 0.0001,   0.01, 10);    %minimun altitude
+    [Qp, ydotbar] = iCAT_task(eye(14),  eye(14),  Qp, ydotbar, zeros(14,1), 0.0001,   0.01, 10);    % this task should be the last one
 
     % get the two variables for integration
     pandaArms.ArmL.q_dot = ydotbar(1:7);

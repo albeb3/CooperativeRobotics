@@ -24,7 +24,43 @@ jlmax = [2.8973;1.7628;2.8973;-0.0698;2.8973;3.7525;2.8973];
 % Init relevance Jacobians
 pandaArm.ArmL.bJe = eye(6,7);
 pandaArm.ArmR.bJe = eye(6,7);
-pandaArm.Jjl = [];
+pandaArm.Jjl = [ ];
+
+%% ... to HERE.
+% Init robot model
+
+wTb_left = eye(4); % fixed transformation word -> base1
+wTb_right = [rotation(0,0,pi),[1.06 -0.01 0]'; 0 0 0 1]; % fixed transformation word -> base2
+
+pandaArm.eRt=rotation(0,0, deg2rad(-44.9949));
+%%% General R-L
+pandaArm.eOt=[0 0 0.2104]';
+
+%%%Left tool
+
+pandaArm.ArmL.bRe=pandaArm.ArmL.bTe[1:3,1:3];
+pandaArm.ArmL.bRt=pandaArm.ArmL.bRe*pandaArm.eRt;
+pandaArm.ArmL.bOe=pandaArm.ArmL.bTe[1:3,4];
+pandaArm.ArmL.bOt=pandaArm.ArmL.bOe+pandaArm.eOt;
+pandaArm.ArmL.bTt=[pandaArm.ArmL.bRt, pandaArm.ArmL.bOt;zeros(1,3), 1];
+%%%right tool
+pandaArm.ArmR.bRe=pandaArm.ArmR.bTe[1:3,1:3];
+pandaArm.ArmR.bRt=pandaArm.ArmR.bRe*pandaArm.eRt;
+pandaArm.ArmR.bOe=pandaArm.ArmR.bTe[1:3,4];
+pandaArm.ArmR.bOt=pandaArm.ArmR.bOe+pandaArm.eOt;
+pandaArm.ArmR.bTt=[pandaArm.ArmR.bRt, pandaArm.ArmR.bOt;zeros(1,3), 1];
+% Define trasnformation matrix from ee to tool.
+pandaArms.ArmL.eTt = [eRt eOt;zeros(1,3) 1];
+pandaArms.ArmR.eTt =[eRt eOt;zeros(1,3) 1];
+% Transformation matrix from <t> to <w>
+%%Trasformation left manipulator
+pandaArms.ArmL.wRt=pandaArm.ArmL.wTe[1:3,1:3]*pandaArm.eRt;
+pandaArms.ArmL.wOt=pandaArm.ArmL.wTe[1:3,4]+pandaArm.eOt;
+pandaArms.ArmL.wTt =[pandaArms.ArmL.wRt pandaArms.ArmL.wOt;zeros(1,3) 1];
+%%Trasformation right manipulator
+pandaArms.ArmR.wRt=pandaArm.ArmR.wTe[1:3,1:3]*pandaArm.eRt;
+pandaArms.ArmR.wOt=pandaArm.ArmR.wTe[1:3,4]+pandaArm.eOt;
+pandaArms.ArmR.wTt=[pandaArms.ArmR.wRt pandaArms.ArmR.wOt ;zeros(1,3) 1];
 
 %% ... TO HERE
 % Init Task Reference vectors
