@@ -1,4 +1,4 @@
-function [pandaArm] = ComputeJacobians(pandaArm,mission)
+function [pandaArms] = ComputeJacobians(pandaArms,mission)
 % compute the relevant Jacobians here
 % joint limits
 % tool-frame position control (to do)
@@ -18,27 +18,31 @@ function [pandaArm] = ComputeJacobians(pandaArm,mission)
 % [angular velocities; linear velocities]
 
 % Left Arm base to ee Jacobian
-pandaArm.ArmL.bJe = geometricJacobian(pandaArm.ArmL.franka, ...
-    [pandaArm.ArmL.q',0,0],'panda_link7');%DO NOT EDIT
+pandaArms.ArmL.bJe = geometricJacobian(pandaArms.ArmL.franka, ...
+    [pandaArms.ArmL.q',0,0],'panda_link7');%DO NOT EDIT
 % Right Arm base to ee Jacobian
-pandaArm.ArmR.bJe = geometricJacobian(pandaArm.ArmR.franka, ...
-    [pandaArm.ArmR.q',0,0],'panda_link7');%DO NOT EDIT
+pandaArms.ArmR.bJe = geometricJacobian(pandaArms.ArmR.franka, ...
+    [pandaArms.ArmR.q',0,0],'panda_link7');%DO NOT EDIT
 
 %%%%%%%%%%%%%%AGGIUNTO IO %%%%%%%%%%%%%%%%%%%%%%%%%%
 % Ste is the rigid body transformation from end-effector frame to 
 % tool-frame frame projected on <w>
-pandaArm.ArmL.Ste = [eye(3) zeros(3);  -skew(pandaArm.ArmL.wTe(1:3,1:3)*pandaArm.ArmL.eTt(1:3,4)) eye(3)];
-pandaArm.ArmR.Ste = [eye(3) zeros(3);  -skew(pandaArm.ArmR.wTe(1:3,1:3)*pandaArm.ArmR.eTt(1:3,4)) eye(3)];
+pandaArms.ArmL.Ste = [eye(3) zeros(3);  -skew(pandaArms.ArmL.wTe(1:3,1:3)*pandaArms.ArmL.eTt(1:3,4)) eye(3)];
+pandaArms.ArmR.Ste = [eye(3) zeros(3);  -skew(pandaArms.ArmR.wTe(1:3,1:3)*pandaArms.ArmR.eTt(1:3,4)) eye(3)];
 
 % Top three rows are angular velocities, bottom three linear velocities
-pandaArm.ArmL.wJt  = pandaArm.ArmL.Ste*[pandaArm.ArmL.wTb(1:3,1:3) zeros(3,3) ; zeros(3,3) pandaArm.ArmL.wTb(1:3,1:3)]*pandaArm.ArmL.bJe;
-pandaArm.ArmR.wJt  =pandaArm.ArmR.Ste*[pandaArm.ArmR.wTb(1:3,1:3) zeros(3,3) ; zeros(3,3) pandaArm.ArmR.wTb(1:3,1:3)]*pandaArm.ArmR.bJe;
+pandaArms.ArmL.wJt  = pandaArms.ArmL.Ste*[pandaArms.ArmL.wTb(1:3,1:3) zeros(3,3) ; zeros(3,3) pandaArms.ArmL.wTb(1:3,1:3)]*pandaArms.ArmL.bJe;
+pandaArms.ArmR.wJt  =pandaArms.ArmR.Ste*[pandaArms.ArmR.wTb(1:3,1:3) zeros(3,3) ; zeros(3,3) pandaArms.ArmR.wTb(1:3,1:3)]*pandaArms.ArmR.bJe;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-if (mission.phase == 2)
-    pandaArm.ArmL.wJo = ...; 
-    pandaArm.ArmR.wJo = ...;
+% if (mission.phase == 2)
+%     pandaArms.ArmL.wJo = ...; 
+%     pandaArms.ArmR.wJo = ...;
 
 % Common Jacobians
-pandaArm.Jjl = eye(14,14);
-pandaArm.Jma = eye(14,14);
+pandaArms.Jjl = eye(14,14);
+
+w_kw=[0 0 1]';
+armLtool_kw=pandaArms.ArmL.wTt(1:3,1:3)'*w_kw;
+pandaArms.Jma_L = [0 0 0 0 0 1];
+pandaArms.Jma_R = [];
 end

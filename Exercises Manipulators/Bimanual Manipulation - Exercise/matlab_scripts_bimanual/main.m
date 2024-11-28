@@ -28,9 +28,11 @@ else
     hudps.RemoteIPAddress = '127.0.0.1';
 end
 
+wTb_left = eye(4); % fixed transformation word -> base1
+wTb_right = [rotation(0,0,pi),[1.06 -0.01 0]'; 0 0 0 1]; % fixed transformation word -> base2
 
 plt = InitDataPlot(maxloops);
-pandaArms = InitRobot(model,wTb1,wTb2);
+pandaArms = InitRobot(model, wTb_left, wTb_right);
 % Init object and tools frames
 obj_length = 0.12;
 w_obj_pos = [0.5 0 0.59]';
@@ -62,9 +64,9 @@ mission.phase_time = 0;
 % JL = joint limits task
 % MA = minimum altitude task
 % RC = rigid constraint task
-mission.actions.go_to.tasks = [JL MA T];
-mission.actions.coop_manip.tasks = [...];
-mission.actions.end_motion.tasks = [...];
+mission.actions.go_to.tasks = ["JL", "MA", "T"];
+mission.actions.coop_manip.tasks = ["JL", "MA", "RC", "T"];
+mission.actions.end_motion.tasks = ["JL", "MA", "RC"];
 
 %% CONTROL LOOP
 disp('STARTED THE SIMULATION');
@@ -125,8 +127,9 @@ for t = 0:dt:Tf
     % Bimanual system TPIK
     % ...
     % Task: Tool Move-To
-    [Qp, ydotbar] = iCAT_task(pandaArm.A.jl,  pandaArm.Jjl,  Qp, ydotbar, pandaArm.xdot.jl, 0.0001,   0.01, 10);    % Joint-limit da finire "previous current"
-    [Qp, ydotbar] = iCAT_task(pandaArm.A.ma,  pandaArm.Jma,  Qp, ydotbar, pandaArm.xdot.alt , 0.0001,   0.01, 10);    %minimun altitude
+    [Qp, ydotbar] = iCAT_task(pandaArms.A.jl,  pandaArms.Jjl,  Qp, ydotbar, pandaArms.xdot.jl, 0.0001,   0.01, 10);    % Joint-limit da finire "previous current"
+    [Qp, ydotbar] = iCAT_task(pandaArms.A.ma_L,  pandaArms.Jma_L,  Qp, ydotbar, pandaArms.ArmL.xdot.alt , 0.0001,   0.01, 10);    %minimun altitude
+    [Qp, ydotbar] = iCAT_task(pandaArms.A.ma_R,  pandaArms.Jma_R,  Qp, ydotbar, pandaArms.ArmR.xdot.alt , 0.0001,   0.01, 10);    %minimun altitude
     [Qp, ydotbar] = iCAT_task(eye(14),  eye(14),  Qp, ydotbar, zeros(14,1), 0.0001,   0.01, 10);    % this task should be the last one
 
     % get the two variables for integration
@@ -177,4 +180,4 @@ for t = 0:dt:Tf
 end
 
 PrintPlot(plt, pandaArms);
-end
+%end
