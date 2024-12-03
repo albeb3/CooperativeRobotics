@@ -114,6 +114,10 @@ for t = 0:dt:Tf
         % gripper
         tool_jacobian_L = pandaArms.ArmL.wJt;
         tool_jacobian_R = pandaArms.ArmR.wJt;
+        pandaArms.ArmL.wTt(1:3,4)
+        pandaArms.ArmR.wTt(1:3,4)
+
+
     elseif(mission.phase == 2)
         % In this phase the tool frame coincide with the object frame
         tool_jacobian_L = pandaArms.ArmL.wJo;
@@ -130,6 +134,8 @@ for t = 0:dt:Tf
     [Qp, ydotbar] = iCAT_task(pandaArms.A.jl,  pandaArms.Jjl,  Qp, ydotbar, pandaArms.xdot.jl, 0.0001,   0.01, 10);    % Joint-limit da finire "previous current"
     [Qp, ydotbar] = iCAT_task(pandaArms.A.ma_L,  pandaArms.Jma_L,  Qp, ydotbar, pandaArms.ArmL.xdot.alt , 0.0001,   0.01, 10);    %minimun altitude
     [Qp, ydotbar] = iCAT_task(pandaArms.A.ma_R,  pandaArms.Jma_R,  Qp, ydotbar, pandaArms.ArmR.xdot.alt , 0.0001,   0.01, 10);    %minimun altitude
+    [Qp, ydotbar] = iCAT_task(pandaArms.A.tool_L, pandaArms.wJt ,  Qp, ydotbar,  pandaArms.xdot.tool , 0.0001,   0.01, 10);
+    [Qp, ydotbar] = iCAT_task(pandaArms.A.tool_R, pandaArms.wJt ,  Qp, ydotbar,  pandaArms.xdot.tool , 0.0001,   0.01, 10);
     [Qp, ydotbar] = iCAT_task(eye(14),  eye(14),  Qp, ydotbar, zeros(14,1), 0.0001,   0.01, 10);    % this task should be the last one
 
     % get the two variables for integration

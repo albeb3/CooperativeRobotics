@@ -12,11 +12,15 @@ end
 switch mission.phase
     case 1  % Reach the grasping point
         % Move-To
-        activationfunctionstool=eye(2);
-        [err_rho_L,err_pos_L]=CartError(pandaArms.ArmL.wTg,pandaArms.ArmL.wTt);
-         activationfunctionstool(1,1)=DecreasingBellShapedFunction(0.001,0.1,0,1, norm(err_pos_L) );
+        activationfunctionstool=eye(6);
+         err_rho_L,err_pos_L]=CartError(pandaArms.ArmL.wTg,pandaArms.ArmL.wTt);
+         for i=1:6
+            activationfunctionstool(i,i)=DecreasingBellShapedFunction(0.001,0.1,0,1, norm(err_pos_L) );
+         end 
          [err_rho_R,err_pos_R]=CartError(pandaArms.ArmR.wTg,pandaArms.ArmR.wTt);
-         activationfunctionstool(2,2)=DecreasingBellShapedFunction(0.001,0.1,0,1, norm(err_pos_R) );
+         for i=1:6
+            activationfunctionstool(i,i)=DecreasingBellShapedFunction(0.001,0.1,0,1, norm(err_pos_R) );
+         end    
          pandaArms.A.tool = activationfunctionstool .* ActionTransition("T",prev_action , current_action, mission.phase_time);
          
     case 2 % Move the object holding it firmly

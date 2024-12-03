@@ -34,7 +34,7 @@ pandaArms.Jjl = [ ];
 
 pandaArms.eRt=rotation(0,0, deg2rad(-44.9949));
 %%% General R-L
-pandaArms.eOt=[0 0 0.2104]';
+pandaArms.eOt=pandaArms.eRt*[0 0 0.2104]'; % tool vector position projected on world-frame
 
 %%%Left tool
 
